@@ -12,7 +12,7 @@ private val COMPATIBILITY_POKEMON_GO_RPC_PROBE = Compatibility(
 
 /**
  * Read-only runtime metadata diagnostics for Pokémon GO 0.431.0 ARM64.
- * This does not invoke game methods or send game RPC requests.
+ * This does not invoke managed methods or send game RPC requests.
  */
 @Suppress("unused")
 val pokemonGoRpcRuntimeProbe = rawResourcePatch(
