@@ -16,9 +16,10 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
       - name: Install Android NDK and CMake
-        run: sdkmanager "ndk;27.2.12479018" "cmake;3.22.1"
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "ndk;27.2.12479018" "cmake;3.22.1"
       - name: Build native payloads
         run: |
           cmake -S native -B build/native \
