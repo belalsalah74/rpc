@@ -1,4 +1,4 @@
-rootProject.name = "pokemon-go-rpc-probe"
+rootProject.name = "rpc"
 
 pluginManagement {
     repositories {
@@ -19,5 +19,3 @@ pluginManagement {
 plugins {
     id("app.morphe.patches") version "1.3.4"
 }
-
-include(":patches")
