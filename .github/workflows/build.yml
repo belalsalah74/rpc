@@ -16,6 +16,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+      - uses: android-actions/setup-android@v4
       - name: Install Android NDK and CMake
         run: |
           yes | sdkmanager --licenses
