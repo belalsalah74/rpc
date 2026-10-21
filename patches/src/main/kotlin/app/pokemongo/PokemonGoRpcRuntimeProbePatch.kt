@@ -7,17 +7,20 @@ import app.morphe.patcher.patch.rawResourcePatch
 private val COMPATIBILITY_POKEMON_GO_RPC_PROBE = Compatibility(
     name = "Pokémon GO",
     packageName = "com.nianticlabs.pokemongo",
-    targets = listOf(AppTarget(version = "0.431.0")),
+    targets = listOf(
+        AppTarget(version = "0.433.1"),
+        AppTarget(version = "0.431.0"),
+    ),
 )
 
 /**
- * Read-only runtime metadata diagnostics for Pokémon GO 0.431.0 ARM64.
+ * Read-only runtime metadata diagnostics for Pokémon GO 0.433.1 / 0.431.0 ARM64.
  * This does not invoke managed methods or send game RPC requests.
  */
 @Suppress("unused")
 val pokemonGoRpcRuntimeProbe = rawResourcePatch(
     name = "RPC runtime probe",
-    description = "Logs selected IL2CPP RPC method signatures, code RVAs, field offsets and references for Pokémon GO 0.431.0 ARM64.",
+    description = "Logs selected IL2CPP RPC method signatures, code RVAs, field offsets and references for Pokémon GO 0.433.1 / 0.431.0 ARM64. Output goes to logcat (PGORPCPROBE) and files/rpc_probe.txt.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_POKEMON_GO_RPC_PROBE)
@@ -28,7 +31,7 @@ val pokemonGoRpcRuntimeProbe = rawResourcePatch(
         val backup = dir.resolve("libmain_orig.so")
         require(original.exists()) { "lib/arm64-v8a/libmain.so not found" }
         require(!backup.exists()) {
-            "libmain_orig.so already exists; patch an unmodified official Pokémon GO 0.431.0 APK"
+            "libmain_orig.so already exists; patch an unmodified official Pokémon GO APK"
         }
 
         val classLoader = object {}.javaClass.classLoader
