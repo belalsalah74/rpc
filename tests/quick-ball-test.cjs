@@ -45,7 +45,7 @@ function fixture(options={}){
  // Trace classes exist only with options.trace, so default fixtures prove the trace is optional.
  const classes=[BALL,CAP,RESP,AN,OB,SYNC,'System.Single','System.Boolean'];if(options.trace)for(const k of[AINFO,RAC,AOC,I32,STR])if(k!==options.omitClass)classes.push(k);
  if(options.throws)classes.push(THROW,ENCOUNTER);if(options.map)classes.push(GROUND,MAPVIEW,LATLNG,VEC3);
- if(options.iv)for(const k of [WILDMAP,WILDPROTO,ENCOUNTEROUT,TAPPABLE,NAMEPLATE,PK,MAPPK,LEVELS,UITEXT,'UnityEngine.TextAnchor','UnityEngine.HorizontalWrapMode',I32,STR])if(!classes.includes(k))classes.push(k);
+ if(options.iv)for(const k of [WILDMAP,WILDPROTO,ENCOUNTEROUT,TAPPABLE,NAMEPLATE,PK,MAPPK,LEVELS,'IGameMasterData',UITEXT,'UnityEngine.TextAnchor','UnityEngine.HorizontalWrapMode',I32,STR])if(!classes.includes(k))classes.push(k);
  const fields=new Map();for(const[owner,name,type,offset]of[[BALL,'animator',AN,176],[BALL,'<HoldingBreadBall>k__BackingField','System.Boolean',576],[RESP,'Status',EN,16]])fields.set(owner+'::'+name,{owner,name,type,offset,flags:1});
  if(options.throws)for(const[name,type,offset]of [['BallType','Holoholo.Rpc.Item',16],['ReticleSize','System.Single',20],['HitBullseye','System.Boolean',24],['Spinning','System.Boolean',25],['Missed','System.Boolean',26]])fields.set(THROW+'::'+name,{owner:THROW,name,type,offset,flags:1});
  if(options.map)for(const [owner,name,type,offset] of [[LATLNG,'Latitude','System.Double',16],[LATLNG,'Longitude','System.Double',24],[VEC3,'x','System.Single',16],[VEC3,'y','System.Single',20],[VEC3,'z','System.Single',24]])fields.set(owner+'::'+name,{owner,name,type,offset,flags:1});
