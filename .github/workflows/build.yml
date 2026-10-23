@@ -1,4 +1,4 @@
-name: Build RPC Probe Patch
+name: Build Quick Catch + Enhanced Throw Patch
 
 on:
   push:
@@ -17,27 +17,36 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript and run Quick Ball regression tests
+        run: |
+          node --check patches/src/main/resources/pgo/quickcatch/agent.js
+          node --check patches/src/main/resources/pgo/quickcatch/quick-ball.js
+          node --check patches/src/main/resources/pgo/quickcatch/quick-close.js
+          node --check patches/src/main/resources/pgo/quickcatch/catch-presentation-bridge.js
+          cat patches/src/main/resources/pgo/quickcatch/catch-presentation-bridge.js patches/src/main/resources/pgo/quickcatch/quick-close.js > /tmp/pgorpc-quick-close-bundle.js
+          node --check /tmp/pgorpc-quick-close-bundle.js
+          node tests/quick-ball-test.cjs
       - uses: android-actions/setup-android@v4
       - name: Install Android NDK and CMake
         run: |
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "ndk;27.2.12479018" "cmake;3.22.1"
-      - name: Build native payloads
+      - name: Build native payloads and download verified Frida Gadget
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cmake -S native -B build/native \
-            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/27.2.12479018/build/cmake/android.toolchain.cmake" \
-            -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-28
-          cmake --build build/native --config Release --parallel
-          mkdir -p patches/src/main/resources/pgo/arm64-v8a
-          cp build/native/libmain.so patches/src/main/resources/pgo/arm64-v8a/libmain.so
-          cp build/native/libpgo_rpc_probe.so patches/src/main/resources/pgo/arm64-v8a/libpgo_rpc_probe.so
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
+          bash ./native/build_android.sh
       - name: Build Morphe patch bundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :patches:buildAndroid --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: pokemon-go-rpc-probe-mpp
+          name: pokemon-go-quick-catch-enhanced-throw-mpp
           path: patches/build/libs/patches-*.mpp
           if-no-files-found: error
           retention-days: 7

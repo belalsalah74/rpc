@@ -4,46 +4,49 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.rawResourcePatch
 
-private val COMPATIBILITY_POKEMON_GO_RPC_PROBE = Compatibility(
+private val COMPATIBILITY_POKEMON_GO_QUICK_CATCH = Compatibility(
     name = "Pokémon GO",
     packageName = "com.nianticlabs.pokemongo",
-    targets = listOf(
-        AppTarget(version = "0.433.1"),
-        AppTarget(version = "0.431.0"),
-    ),
+    targets = listOf(AppTarget(version = "0.433.1")),
 )
 
 /**
- * Read-only runtime metadata diagnostics for Pokémon GO 0.433.1 / 0.431.0 ARM64.
- * This does not invoke managed methods or send game RPC requests.
+ * Quick Catch and Excellent curve-throw routines adapted from PGRazor for the pinned
+ * Pokémon GO 0.433.1 ARM64 build. The read-only RPC probe remains available for diagnostics.
  */
 @Suppress("unused")
-val pokemonGoRpcRuntimeProbe = rawResourcePatch(
-    name = "RPC runtime probe",
-    description = "Logs selected IL2CPP RPC method signatures, code RVAs, field offsets and references for Pokémon GO 0.433.1 / 0.431.0 ARM64. Output goes to logcat (PGORPCPROBE) and files/rpc_probe.txt.",
+val pokemonGoQuickCatchEnhancedThrow = rawResourcePatch(
+    name = "Quick Catch + Enhanced Throw",
+    description = "Accelerated catch presentation, automatic post-catch dismissal, and Excellent curve throws for Pokémon GO 0.433.1 ARM64. Includes read-only RPC diagnostics.",
     default = false,
 ) {
-    compatibleWith(COMPATIBILITY_POKEMON_GO_RPC_PROBE)
-
+    compatibleWith(COMPATIBILITY_POKEMON_GO_QUICK_CATCH)
     execute {
-        val dir = get("lib/arm64-v8a")
-        val original = dir.resolve("libmain.so")
-        val backup = dir.resolve("libmain_orig.so")
+        val nativeDir = get("lib/arm64-v8a")
+        val original = nativeDir.resolve("libmain.so")
+        val backup = nativeDir.resolve("libmain_orig.so")
         require(original.exists()) { "lib/arm64-v8a/libmain.so not found" }
-        require(!backup.exists()) {
-            "libmain_orig.so already exists; patch an unmodified official Pokémon GO APK"
-        }
-
-        val classLoader = object {}.javaClass.classLoader
-            ?: error("Unable to resolve patch bundle class loader")
-        fun resource(name: String) = classLoader.getResourceAsStream(name)?.use { it.readBytes() }
+        require(!backup.exists()) { "libmain_orig.so already exists; patch a clean, official Pokémon GO APK" }
+        val loader = object {}.javaClass.classLoader ?: error("Unable to resolve patch bundle class loader")
+        fun resource(name: String) = loader.getResourceAsStream(name)?.use { it.readBytes() }
             ?: error("Missing resource $name")
-
         val bootstrap = resource("pgo/arm64-v8a/libmain.so")
         val probe = resource("pgo/arm64-v8a/libpgo_rpc_probe.so")
-
+        val assets = mapOf(
+            "libfrida-gadget.so" to resource("pgo/arm64-v8a/libfrida-gadget.so"),
+            "agent.js" to resource("pgo/quickcatch/agent.js"),
+            "quick-ball.js" to resource("pgo/quickcatch/quick-ball.js"),
+            "quick-close.js" to resource("pgo/quickcatch/quick-close.js"),
+            "catch-presentation-bridge.js" to resource("pgo/quickcatch/catch-presentation-bridge.js"),
+            "PGRazor-LICENSE.txt" to resource("pgo/quickcatch/PGRazor-LICENSE.txt"),
+            "FRIDA-COPYING.txt" to resource("pgo/quickcatch/FRIDA-COPYING.txt"),
+            "FRIDA-NOTICE.txt" to resource("pgo/quickcatch/FRIDA-NOTICE.txt"),
+        )
+        val packagedAssets = get("assets/pgorpc")
+        require(packagedAssets.isDirectory || packagedAssets.mkdirs()) { "Unable to create assets/pgorpc in the APK" }
+        assets.forEach { (name, content) -> packagedAssets.resolve(name).writeBytes(content) }
         original.copyTo(backup, overwrite = false)
         original.writeBytes(bootstrap)
-        dir.resolve("libpgo_rpc_probe.so").writeBytes(probe)
+        nativeDir.resolve("libpgo_rpc_probe.so").writeBytes(probe)
     }
 }

@@ -128,3 +128,6 @@ node_modules/
 # Ignore IDEA files
 .idea/
 local.properties
+
+# Downloaded Frida Gadget runtime (generated and verified at build time)
+/patches/src/main/resources/pgo/arm64-v8a/libfrida-gadget.so

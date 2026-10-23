@@ -1,45 +1,47 @@
-# Pokémon GO RPC Runtime Probe
+# Pokémon GO Quick Catch + Enhanced Throw
 
-A clean Morphe patch project initialized from the [official Morphe patch template](https://github.com/MorpheApp/morphe-patches-template). This repository contains **one patch only**: RPC runtime probe for Pokémon GO 0.433.1 / 0.431.0 ARM64.
+A pinned ARM64 runtime patch for **Pokémon GO 0.433.1**. It keeps the existing RPC metadata probe and adds Quick Catch and Enhanced Throw based on the MIT-licensed PGRazor implementation.
 
-## Patch
+## Features
 
-**RPC runtime probe** collects read-only IL2CPP metadata for selected RPC-related classes: method signatures, code RVAs, field offsets, and selected static references. It does not invoke managed methods or send game RPC requests. The patch is disabled by default.
+- **Quick Catch:** speeds up the ordinary Poké Ball catch animation and automatically dismisses the normal post-catch summary/details sequence after a confirmed successful catch. New-species/form cutscenes remain under the game's normal flow.
+- **Enhanced Throw:** sets the throw reticle to **Excellent** and enables the curveball flag when a supported ordinary throw is submitted or hit.
+- **Diagnostics:** retains the read-only RPC metadata probe. Runtime events use the PGORPCLOADER, PGORPCFEATURE, and PGORPCPROBE log tags.
 
-This is a diagnostic prototype, not a working authenticated `GameSession` adapter for Shiny Atlas. Runtime logs must be checked on a device before deciding the next adapter changes.
+There is no settings UI in this first prototype. Both gameplay features are enabled automatically when the patch starts; auto-transfer is explicitly disabled. The patch is disabled by default in the Morphe patch manager.
 
-## Build
+## Compatibility and limitations
 
-On Fedora/Linux, install Java 21, Android SDK/NDK, CMake, and Android platform tools, then configure the SDK:
+Only **Pokémon GO 0.433.1, ARM64** is declared compatible. PGRazor's IL2CPP class layouts, method RVAs, and instruction fingerprints are version-specific; other versions are intentionally not targeted. Source integration and CI tests do not replace an install/launch/catch smoke test on a real device. The existing read-only probe is useful if a target method fails validation.
 
-```sh
+## Build on Fedora/Linux
+
+Install Java 21, Android SDK/NDK, CMake, Python 3, Node.js 22, and Android platform tools. Configure the SDK:
+
+~~~sh
 export ANDROID_HOME="$HOME/Android/Sdk"
 export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
-./native/build_android.sh
+bash ./native/build_android.sh
 ./gradlew :patches:buildAndroid --no-daemon
-```
+~~~
 
-GitHub Actions builds the ARM64 native payloads and the Morphe `.mpp` bundle, then uploads the bundle as a seven-day artifact.
+The native build downloads the pinned Frida Gadget 17.24.2 ARM64 release asset and verifies the SHA-256 digest published by the official GitHub release API, then verifies its ELF architecture. The downloaded library is ignored by Git and embedded as an APK asset by the patch.
+
+GitHub Actions runs the Quick Ball test suite and JavaScript syntax checks, builds the native ARM64 bootstrap, and produces the Morphe .mpp patch bundle as a seven-day artifact. The bundle patches a clean official APK; it is not a standalone installable APK.
 
 ## Test on device
 
-1. Patch a **clean, official Pokémon GO 0.433.1 (or 0.431.0) ARM64 APK** and select only **RPC runtime probe**.
-2. Do not use an APK that already has `libmain_orig.so`.
-3. Launch the game to the map screen.
-4. With USB debugging enabled on a computer, capture:
+1. Patch a **clean, official Pokémon GO 0.433.1 ARM64 APK** and select only **Quick Catch + Enhanced Throw**.
+2. Install the patched APK and launch to the map. The first start extracts the runtime to the app-private files directory and initializes Frida after application startup.
+3. Capture filtered logs with USB debugging:
 
-   ```sh
+   ~~~sh
    adb logcat -c
-   adb logcat -s PGORPCPROBE:I PGORPCLOADER:I '*:S'
-   ```
-   The same lines are also written to `/data/data/com.nianticlabs.pokemongo/files/rpc_probe.txt` (logcat drops lines under heavy output). Pull it with `adb shell run-as` (not possible on a release build) or from Termux with root/Shizuku: `rish -c "cat /data/data/com.nianticlabs.pokemongo/files/rpc_probe.txt"`.
+   adb logcat -s PGORPCLOADER:I PGORPCFEATURE:I PGORPCPROBE:I '*:S'
+   ~~~
 
-5. Share only the filtered `PGORPCPROBE` lines around `CLASS`, `CLASS_CANDIDATE`, `METHOD`, `PARAM`, `FIELD`, `STATIC_REF`, `OWNER_FIELD`, and `RPC metadata probe complete`. Do not share credentials or unrelated logs.
+4. Confirm the message "Frida Gadget initialized", then look for the events "metadata-ready", "speed-applied", and "throw-applied". If any component is unavailable, share only filtered error/event lines.
 
-## Repository
+## Third-party notices
 
-https://github.com/belalsalah74/rpc
-
-## License
-
-GPL-3.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+The adapted PGRazor JavaScript routines and test harness are licensed under MIT; see PGRazor-LICENSE.txt in the patch resources. The Frida Gadget binary is downloaded from the official Frida 17.24.2 release and its corresponding COPYING notice is bundled as FRIDA-COPYING.txt in the APK assets. The main project remains GPL-3.0; see LICENSE and NOTICE.

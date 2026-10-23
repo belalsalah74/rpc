@@ -1,0 +1,4 @@
+Frida Gadget 17.24.2, Android ARM64.
+Official release asset: https://github.com/frida/frida/releases/download/17.24.2/frida-gadget-17.24.2-android-arm64.so.xz
+Official source and licensing notice: https://github.com/frida/frida/blob/17.24.2/COPYING
+The compressed release asset is SHA-256-verified against GitHub release metadata during builds.
