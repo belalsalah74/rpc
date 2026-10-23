@@ -21,7 +21,7 @@ Install Java 21, Android SDK/NDK, CMake, Python 3, Node.js 22, and Android platf
 ~~~sh
 export ANDROID_HOME="$HOME/Android/Sdk"
 export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
-./native/build_android.sh
+bash ./native/build_android.sh
 ./gradlew :patches:buildAndroid --no-daemon
 ~~~
 
