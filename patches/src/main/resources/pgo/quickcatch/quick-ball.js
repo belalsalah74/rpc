@@ -526,7 +526,8 @@ function install(s,p){
   }catch(e){a.retryAt=now===null?0:now+1000;a.retryTicks=60;s.allowedUntil=0;s.stopping=true;s.reason=s.reason||'restoration-failed';if(!a.reported){a.reported=true;event(s,'cleanup-failed',{reason:String(e).slice(0,140),pending:true,tid:s.thread});}}
  }
  function cleanupTick(tid){if(s.busy)return;s.busy=true;try{if(!unity(tid))return;pruneSeen();traceTick();
-  ivTick();
+  // Optional IV-display work must never prevent restoration of an active catch animation.
+  try{ivTick();}catch(e){s.ivFault=true;fault(s,e);event(s,'iv-display-error',{context:'tick',reason:String(e).slice(0,140)});}
   const a=s.attempt;if(!a)return;if(s.stopping||s.allowedUntil===0){restore(s.stopping?'stop':'off',false);return;}
   let now;try{now=s.now();}catch(e){fault(s,e);restore('clock-failed',true);return;}
   if(now>=s.allowedUntil||now>=a.deadline)restore(now>=a.deadline?'timeout':'lease-expired',false);
