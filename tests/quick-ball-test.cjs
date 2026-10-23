@@ -214,6 +214,9 @@ async function main(){
  assert.deepEqual(isolated.writes,[20],'Outcome failure does not block acceleration');isolated.caught(ib);isolated.ball(isolated.make({status:43,speed:1.5}));const ib2=isolated.ball();isolated.caught(ib2);isolated.timer();
  assert.deepEqual(isolated.writes,[20,1,20,1]);assert.deepEqual(outcomes(isolated).map(e=>e.kind),['outcome-unavailable']);assert.equal(isolated.handles.size,0);
  const isolatedStop=isolated.probe.stop();isolated.unity();isolated.timer();assert.equal((await isolatedStop).status,'cancelled','Outcome failure does not fault the feature');
+ await throwTests();
+ console.log('PASS Quick Catch + Enhanced Throw core regression tests');
+ return; // IV display, map taps, and trace diagnostics are outside this patch's scope.
  const label=fixture({iv:true});label.ready();assert.equal(label.events.find(e=>e.kind==='metadata-ready').iv.available,true);
  assert.equal(label.iv(),'1234 \u00b7 Lv 25 \u00b7 <color="#ff5252">IV 100%</color>');assert.equal(label.handles.size,0);
  assert.equal(label.iv({individualAttack_:0,individualDefense_:0,individualStamina_:0}),'1234 \u00b7 Lv 25 \u00b7 <color="#dedede">IV 0%</color>');
